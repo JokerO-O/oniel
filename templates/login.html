@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Iniciar Sesión</title>
+    <style>
+        /* Estilos básicos */
+        body {
+            font-family: Arial, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .form-container {
+            background: #161b22;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            text-align: center;
+            width: 400px;
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #30363d;
+            border-radius: 5px;
+            background: #21262d;
+            color: #c9d1d9;
+        }
+        button {
+            width: 100%;
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #2ea043;
+        }
+        .toggle-link {
+            color: #58a6ff;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container" id="loginContainer">
+        <h2>Iniciar Sesión</h2>
+        <form id="loginForm" method="POST" action="/login">
+            <input type="text" name="username" placeholder="Usuario" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <button type="submit">Iniciar Sesión</button>
+        </form>
+        <p>¿No tienes una cuenta? <span class="toggle-link" id="toRegister">Registrar</span></p>
+    </div>
+
+    <div class="form-container" id="registerContainer" style="display: none;">
+        <h2>Registrar</h2>
+        <form id="registerForm" method="POST" action="/register">
+            <input type="text" name="username" placeholder="Usuario" required>
+            <input type="password" name="password" placeholder="Contraseña" required>
+            <input type="password" name="confirm_password" placeholder="Confirmar Contraseña" required>
+            <button type="submit">Registrar</button>
+        </form>
+        <p>¿Ya tienes una cuenta? <span class="toggle-link" id="toLogin">Iniciar sesión</span></p>
+    </div>
+
+    <script>
+        const toRegister = document.getElementById('toRegister');
+        const toLogin = document.getElementById('toLogin');
+        const loginContainer = document.getElementById('loginContainer');
+        const registerContainer = document.getElementById('registerContainer');
+
+        toRegister.addEventListener('click', () => {
+            loginContainer.style.display = 'none';
+            registerContainer.style.display = 'block';
+        });
+
+        toLogin.addEventListener('click', () => {
+            registerContainer.style.display = 'none';
+            loginContainer.style.display = 'block';
+        });
+    </script>
+</body>
+</html>

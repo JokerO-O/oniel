@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario</title>
+</head>
+<body>
+    <h1>Bienvenido al Calendario, {{ session['username'] }}</h1>
+
+    <!-- Botón para cerrar sesión -->
+    <form action="{{ url_for('logout') }}" method="POST">
+        <button type="submit">Cerrar sesión</button>
+    </form>
+    <title>Calendario Interactivo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #0d1117;
+            color: #c9d1d9;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        h1 {
+            color: #58a6ff;
+        }
+
+        .calendar-container {
+            background: #161b22;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.4);
+            text-align: center;
+            width: 90%;
+            max-width: 800px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-header button {
+            background: #238636;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .calendar-header button:hover {
+            background: #2ea043;
+        }
+
+        .month {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #58a6ff;
+        }
+
+        .weekdays,
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+
+        .weekday,
+        .day {
+            text-align: center;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .weekday {
+            font-weight: bold;
+            color: #58a6ff;
+        }
+
+        .day {
+            background: #21262d;
+            cursor: pointer;
+        }
+
+        .day:hover {
+            background: #364b4c;
+        }
+
+        .today {
+            background: #238636;
+            color: white;
+            box-shadow: 0 0 15px rgba(255, 204, 0, 0.6);
+        }
+
+        .event-list {
+            margin-top: 20px;
+            text-align: left;
+            background: #161b22;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .event-item {
+            margin: 5px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .event-item button {
+            background: red;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .event-item button:hover {
+            background: #ff4d4d;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Calendario Interactivo</h1>
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <button id="prevMonth">Anterior</button>
+            <div class="month" id="currentMonth"></div>
+            <button id="nextMonth">Siguiente</button>
+        </div>
+        <div class="weekdays" id="weekdays">
+            <div class="weekday">Lun</div>
+            <div class="weekday">Mar</div>
+            <div class="weekday">Mié</div>
+            <div class="weekday">Jue</div>
+            <div class="weekday">Vie</div>
+            <div class="weekday">Sáb</div>
+            <div class="weekday">Dom</div>
+        </div>
+        <div class="days" id="calendarDays"></div>
+        <div class="event-list" id="eventList"></div>
+    </div>
+
+    <script>
+        const calendarDays = document.getElementById('calendarDays');
+        const currentMonthElem = document.getElementById('currentMonth');
+        const eventList = document.getElementById('eventList');
+        const prevMonthButton = document.getElementById('prevMonth');
+        const nextMonthButton = document.getElementById('nextMonth');
+
+        let currentYear = new Date().getFullYear();
+        let currentMonth = new Date().getMonth();
+
+        const months = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+
+        function renderCalendar(year, month) {
+            calendarDays.innerHTML = '';
+            currentMonthElem.textContent = `${months[month]} ${year}`;
+
+            const firstDay = new Date(year, month, 1).getDay() || 7;
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+            for (let i = 1; i < firstDay; i++) {
+                const emptyDiv = document.createElement('div');
+                calendarDays.appendChild(emptyDiv);
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dayElem = document.createElement('div');
+                dayElem.className = 'day';
+                dayElem.textContent = day;
+
+                const today = new Date();
+                if (year === today.getFullYear() && month === today.getMonth() && day === today.getDate()) {
+                    dayElem.classList.add('today');
+                }
+
+                dayElem.addEventListener('click', () => addEvent(year, month, day));
+                calendarDays.appendChild(dayElem);
+            }
+        }
+
+        function addEvent(year, month, day) {
+            const description = prompt(`Agregar evento para el ${day}/${month + 1}/${year}`);
+            if (description) {
+                const events = JSON.parse(localStorage.getItem('events')) || {};
+                const key = `${year}-${month}-${day}`;
+                if (!events[key]) events[key] = [];
+                events[key].push(description);
+                localStorage.setItem('events', JSON.stringify(events));
+                renderEventList(year, month, day);
+            }
+        }
+
+        function renderEventList(year, month, day) {
+            eventList.innerHTML = '';
+            const events = JSON.parse(localStorage.getItem('events')) || {};
+            const key = `${year}-${month}-${day}`;
+            if (events[key]) {
+                events[key].forEach((event, index) => {
+                    const eventItem = document.createElement('div');
+                    eventItem.className = 'event-item';
+                    eventItem.innerHTML = `
+                        ${event}
+                        <button onclick="deleteEvent('${key}', ${index})">Eliminar</button>
+                    `;
+                    eventList.appendChild(eventItem);
+                });
+            }
+        }
+
+        function deleteEvent(key, index) {
+            const events = JSON.parse(localStorage.getItem('events')) || {};
+            events[key].splice(index, 1);
+            if (!events[key].length) delete events[key];
+            localStorage.setItem('events', JSON.stringify(events));
+            renderEventList(currentYear, currentMonth, parseInt(key.split('-')[2]));
+        }
+
+        prevMonthButton.addEventListener('click', () => {
+            if (currentMonth === 0) {
+                currentMonth = 11;
+                currentYear--;
+            } else {
+                currentMonth--;
+            }
+            renderCalendar(currentYear, currentMonth);
+        });
+
+        nextMonthButton.addEventListener('click', () => {
+            if (currentMonth === 11) {
+                currentMonth = 0;
+                currentYear++;
+            } else {
+                currentMonth++;
+            }
+            renderCalendar(currentYear, currentMonth);
+        });
+
+        renderCalendar(currentYear, currentMonth);
+    </script>
+</body>
+
+</html>
